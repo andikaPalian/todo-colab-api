@@ -324,7 +324,7 @@ export const joinTodoList = async (todoListId, collaboratorId) => {
         }
 
         // Check if user is owner
-        if (todoList.owner.toString() === userId.toString()) {
+        if (todoList.owner.toString() === collaboratorId.toString()) {
             throw new AppError("You are the owner of this todo list", 400);
         }
 
