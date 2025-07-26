@@ -63,7 +63,7 @@ export const getTodoLists = async (userId, {page = 1, limit = 10}) => {
         const result = todoLists.map(todo => {
             const isOwner = todo.owner._id.toString() === userId.toString();
             // const isCollaborator = todo.collaborators.some(collab => collab.toString() === userId.toString());
-            const role = isOwner ? 'owner' : 'collaborator';
+            const role = isOwner ? 'Owner' : 'Collaborator';
             return {
                 ...todo.toObject(),
                 role
@@ -363,7 +363,7 @@ export const listCollaborators = async (userId, todoListId) => {
         }
 
         // Check if user has access to this todo list
-        const isOwner = todoList.owner.toString() === userId.toString();
+        const isOwner = todoList.owner._id.toString() === userId.toString();
         const isCollaborator = todoList.collaborators.some((collaborator) => collaborator.toString() === userId.toString());
         if (!isOwner && !isCollaborator) {
             throw new AppError("You are not authorized to access this todo list", 403);
@@ -374,9 +374,20 @@ export const listCollaborators = async (userId, todoListId) => {
             _id: {$ne: userId}
         }).select("username profilePicture email");
 
+        const result = collaborators.map(collab => {
+            const role = collab._id.toString() === todoList.owner._id.toString() ? 'Owner' : 'Collaborator';
+            return {
+                _id: collab._id,
+                username: collab.username,
+                profilePicture: collab.profilePicture,
+                email: collab.email,
+                role: role
+            }
+        });
+
         // const totalCollaborator = await User.countDocuments({_id: {$in: todoList.collaborators}});
 
-        return collaborators;
+        return result;
     } catch (error) {
         console.error("Error listing collaborators: ", error);
         throw error;
