@@ -45,6 +45,13 @@ export const getTodoLists = async (userId, {page = 1, limit = 10}) => {
         .populate('owner', 'username profilePicture')
         .populate('collaborators', 'username profilePicture')
         .exec();
+
+        // Check if user is owner or collaborator
+        // const isOwner = todoLists.some(todo => todo.owner.toString() === userId.toString());
+        // const isCollaborator = todoLists.some(todo => todo.collaborators.toString() === userId.toString());
+        // if (!isOwner && !isCollaborator) {
+        //     throw new AppError("You dont have access to any todo lists", 403);
+        // }
         
         const total = await TodoList.countDocuments({
             $or: [
@@ -53,12 +60,22 @@ export const getTodoLists = async (userId, {page = 1, limit = 10}) => {
             ]
         });
 
+        const result = todoLists.map(todo => {
+            const isOwner = todo.owner._id.toString() === userId.toString();
+            // const isCollaborator = todo.collaborators.some(collab => collab.toString() === userId.toString());
+            const role = isOwner ? 'owner' : 'collaborator';
+            return {
+                ...todo.toObject(),
+                role
+            }
+        });
+
         if (!todoLists || todoLists.length === 0) {
             return [];
         }
 
         return {
-            todoLists,
+            todoLists: result,
             pagination: {
                 page: pageNum,
                 limit: limitNum,
