@@ -254,6 +254,20 @@ export const notifyCollaboratorLeft = async (ownerId, collaboratorName, todoList
     });
 };
 
+export const notifyCollaboratorJoinned = async (ownerId, collaboratorName, todoListName) => {
+    return createNotification({
+        userId: ownerId,
+        type: NOTIFICATION_TYPES.JOIN_REQUEST_ACCEPTED,
+        title: "Collaborator Joined",
+        message: `${collaboratorName} has joined "${todoListName}"`,
+        priority: NOTIFICATION_PRIORITY.LOW,
+        data: {
+            collaboratorName,
+            todoListName
+        }
+    });
+};
+
 export const notifyTaskAssigned = async (assignedId, taskTitle, todoLisName, assignedByName) => {
     return createNotification({
         userId: assignedId,

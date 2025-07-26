@@ -1,6 +1,6 @@
 import TodoList from "../models/toDoList.model.js";
 import User from "../models/user.model.js";
-import { notifyCollaboratorKicked, notifyCollaboratorLeft, notifyCollaboratorsAdded, notifyTodoListDeleted } from "./notification.service.js";
+import { notifyCollaboratorJoinned, notifyCollaboratorKicked, notifyCollaboratorLeft, notifyCollaboratorsAdded, notifyTodoListDeleted } from "./notification.service.js";
 import { AppError } from "../utils/errorHandler.js";
 
 export const createTodoList = async (userId, {name}) => {
@@ -335,6 +335,13 @@ export const joinTodoList = async (todoListId, collaboratorId) => {
 
         todoList.collaborators.push(collaboratorId);
         await todoList.save();
+
+        // Notify the owner
+        await notifyCollaboratorJoinned(
+            todoList.owner._id,
+            collaborator.username,
+            todoList.name
+        );
 
         return todoList.populate('collaborators', 'username profilePicture');
     } catch (error) {
