@@ -168,7 +168,7 @@ export const deleteTodoList = async (userId, todoListId) => {
             throw new AppError("Todo list not found", 404);
         }
 
-        if (todoList.owner.toString() !== userId.toString()) {
+        if (todoList.owner._id.toString() !== userId.toString()) {
             throw new AppError("You are not authorized to delete this todo list", 403);
         }
 
@@ -178,14 +178,10 @@ export const deleteTodoList = async (userId, todoListId) => {
             await notifyTodoListDeleted(collaboratorIds, todoList.name, todoList.owner.username);
         }
 
-        const deletedTodoList = await TodoList.findByIdAndDelete(todoListId);
-        if (!deletedTodoList) {
-            throw new AppError("Todo list not found or alreadty deleted", 404);
-        }
-
-        return deletedTodoList;
+        await TodoList.findByIdAndDelete(todoListId);
     } catch (error) {
         console.error("Error deleting todo list: ", error);
+        throw error;
     }
 };
 

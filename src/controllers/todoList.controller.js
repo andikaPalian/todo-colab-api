@@ -94,14 +94,11 @@ export const deleteTodoListController = async (req, res, next) => {
         const userId = req.user.userId;
         const {todoListId} = req.params;
 
-        const deletedTodoList = await deleteTodoList(userId, todoListId);
+        await deleteTodoList(userId, todoListId);
 
         return res.status(200).json({
             succcess: true,
             message: "Todo list deleted successfully",
-            data: {
-                deletedTodoList
-            }
         });
     } catch (error) {
         next(error);
