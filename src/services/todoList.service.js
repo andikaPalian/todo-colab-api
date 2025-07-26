@@ -104,10 +104,10 @@ export const getTodoListById = async (userId, todoListId) => {
         }
 
         // Check if user is owner or collaborator
-        const isOwner = todoList.owner.toString() === userId.toString();
+        const isOwner = todoList.owner._id.toString() === userId.toString();
         const isCollaborator = todoList.collaborators.some((collaborator) => collaborator.toString() === userId.toString());
         if (!isOwner && !isCollaborator) {
-            throw new AppError("You are not authorized to access this todo list", 403);
+            throw new AppError("You are not authorized to access this todo list. You must be the owner or a collaborator", 403);
         }
 
         return todoList;
