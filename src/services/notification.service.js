@@ -175,20 +175,18 @@ export const markAllAsRead = async (userId) => {
 
 export const deleteNotification = async (userId, notificationId) => {
     try {
-        const notification = await Notification.findOne({
+        const notification = await Notification.findOneAndDelete({
             _id: notificationId,
             user: userId
         });
         if (!notification) {
-            throw new AppError("Notification not found", 404);
+            throw new AppError("Notification not found or not yours", 404);
         }
 
         // Emit update to user
         io.to(`user_${userId}`).emit("notification_deleted", {
             notificationId
         });
-
-        return notification;
     } catch (error) {
         console.error("Error deleting notification: ", error);
         throw error;
