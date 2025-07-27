@@ -15,6 +15,12 @@ const todoListSchema = new mongoose.Schema({
             ref: "User"
         }
     ],
+    pendingCollaborators: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ],
     tasks: [
         {
             type: mongoose.Schema.Types.ObjectId,

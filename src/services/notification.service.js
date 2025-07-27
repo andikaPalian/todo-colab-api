@@ -10,6 +10,9 @@ export const NOTIFICATION_TYPES = {
     COLLABORATOR_KICKED: "COLLABORATOR_KICKED",
     COLLABORATOR_LEFT: "COLLABORATOR_LEFT",
     JOIN_REQUEST_ACCEPTED: "JOIN_REQUEST_ACCEPTED",
+    JOIN_REQUEST_REJECTED: "JOIN_REQUEST_REJECTED",
+    JOIN_REQUEST_SENT: "JOIN_REQUEST_SENT",
+    REQUEST_TO_JOIN: "REQUEST_TO_JOIN",
     TASK_ASSIGNED: "TASK_ASSIGNED",
     TASK_COMPLETED: "TASK_COMPLETED",
     TASK_UPDATED: "TASK_UPDATED",
@@ -266,6 +269,48 @@ export const notifyCollaboratorLeft = async (ownerId, collaboratorName, todoList
         data: {
             collaboratorName,
             todoListName
+        }
+    });
+};
+
+export const notifyJoinRequest = async (ownerId, requestingName, todoListName) => {
+    return createNotification({
+        userId: ownerId,
+        type: NOTIFICATION_TYPES.REQUEST_TO_JOIN,
+        title: "Request to Join Todo List",
+        message: `${requestingName} has requested to join "${todoListName}"`,
+        priority: NOTIFICATION_PRIORITY.MEDIUM,
+        data: {
+            requestingName,
+            todoListName
+        }
+    });
+};
+
+export const notifyApprovedJoinRequest = async (requestingId, todoListName, ownerName) => {
+    return createNotification({
+        userId: requestingId,
+        type: NOTIFICATION_TYPES.JOIN_REQUEST_ACCEPTED,
+        title: "Join Request Approved",
+        message: `Your request to join "${todoListName}" has been approved by ${ownerName}`,
+        priority: NOTIFICATION_PRIORITY.MEDIUM,
+        data: {
+            todoListName,
+            ownerName
+        }
+    });
+};
+
+export const notifyRejectedJoinRequest = async (requestingId, todoListName, ownerName) => {
+    return createNotification({
+        userId: requestingId,
+        type: NOTIFICATION_TYPES.JOIN_REQUEST_REJECTED,
+        title: "Join Request Rejected",
+        message: `Your request to join "${todoListName}" has been rejected by ${ownerName}`,
+        priority: NOTIFICATION_PRIORITY.MEDIUM,
+        data: {
+            todoListName,
+            ownerName
         }
     });
 };

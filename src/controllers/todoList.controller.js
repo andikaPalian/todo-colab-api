@@ -1,4 +1,4 @@
-import { createTodoList, getTodoLists, getTodoListById, updateTodoList, deleteTodoList, addColaborator, leftTodoList, kickCollaborator, joinTodoList, listCollaborators } from "../services/todoList.service.js";
+import { createTodoList, getTodoLists, getTodoListById, updateTodoList, deleteTodoList, addColaborator, leftTodoList, kickCollaborator, joinTodoList, listCollaborators, approveJoinRequest, rejectJoinRequest } from "../services/todoList.service.js";
 
 export const createTodoListController = async (req, res, next) => {
     try {
@@ -183,14 +183,59 @@ export const joinTodoListController = async (req, res, next) => {
         const collaboratorId = req.user.userId;
         const {todoListId} = req.params;
 
-        const updatedTodoList = await joinTodoList(todoListId, collaboratorId);
+        await joinTodoList(todoListId, collaboratorId);
 
         return res.status(200).json({
             success: true,
-            message: "Successfully joined todo list",
-            data: {
-                updatedTodoList
-            }
+            message: "Join request sent. Waiting for owner approval.",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const approveJoinRequestController = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const {todoListId} = req.params;
+        const {requestingUserId} = req.body;
+
+        if (!requestingUserId) {
+            return res.status(400).json({
+                success: false,
+                message: "Requesting user id is required"
+            });
+        }
+
+        await approveJoinRequest(userId, todoListId, requestingUserId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Join request approved successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const rejectJoinReqyuestController = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const {todoListId} = req.params;
+        const {requestingUserId} = req.body;
+
+        if (!requestingUserId) {
+            return res.status(400).json({
+                success: false,
+                message: "Requesting user id is required"
+            });
+        }
+
+        await rejectJoinRequest(userId, todoListId, requestingUserId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Join request rejected successfully"
         });
     } catch (error) {
         next(error);

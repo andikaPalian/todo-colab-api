@@ -1,6 +1,6 @@
 import express from 'express';
 import { auth } from '../middlewares/authMiddleware.js';
-import { addColaboratorController, createTodoListController, deleteTodoListController, getTodoListByIdController, getTodoListController, joinTodoListController, kickCollaboratorController, leftTodoListController, listCollaboratorsController, updateTodoListController } from '../controllers/todoList.controller.js';
+import { addColaboratorController, approveJoinRequestController, createTodoListController, deleteTodoListController, getTodoListByIdController, getTodoListController, joinTodoListController, kickCollaboratorController, leftTodoListController, listCollaboratorsController, rejectJoinReqyuestController, updateTodoListController } from '../controllers/todoList.controller.js';
 import { validateBody } from '../middlewares/zodValidation.js';
 import { todoListSchema } from '../validators/todoListValidator.js';
 
@@ -19,3 +19,5 @@ todoListRouter.delete('/:todoListId/left', auth, leftTodoListController);
 todoListRouter.delete('/:todoListId/kick', auth, kickCollaboratorController);
 todoListRouter.post('/:todoListId/join', auth, joinTodoListController);
 todoListRouter.get('/:todoListId/collaborators', auth, listCollaboratorsController);
+todoListRouter.patch('/:todoListId/request/approve', auth, approveJoinRequestController);
+todoListRouter.patch('/:todoListId/request/reject', auth, rejectJoinReqyuestController);

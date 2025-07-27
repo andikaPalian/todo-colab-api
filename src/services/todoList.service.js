@@ -1,6 +1,6 @@
 import TodoList from "../models/toDoList.model.js";
 import User from "../models/user.model.js";
-import { notifyCollaboratorJoinned, notifyCollaboratorKicked, notifyCollaboratorLeft, notifyCollaboratorsAdded, notifyTodoListDeleted } from "./notification.service.js";
+import { createBulkNotifications, notifyApprovedJoinRequest, notifyCollaboratorJoinned, notifyCollaboratorKicked, notifyCollaboratorLeft, notifyCollaboratorsAdded, notifyJoinRequest, notifyRejectedJoinRequest, notifyTodoListDeleted } from "./notification.service.js";
 import { AppError } from "../utils/errorHandler.js";
 
 export const createTodoList = async (userId, {name}) => {
@@ -333,19 +333,118 @@ export const joinTodoList = async (todoListId, collaboratorId) => {
             throw new AppError("You are already a collaborator", 400);
         }
 
-        todoList.collaborators.push(collaboratorId);
+        const isPending = todoList.pendingCollaborators.find(pending => pending.toString() === collaboratorId.toString());
+        if (isPending) {
+            throw new AppError("Join request already sent. Waiting for approval", 400);
+        }
+
+        todoList.pendingCollaborators.push(collaboratorId);
         await todoList.save();
 
         // Notify the owner
-        await notifyCollaboratorJoinned(
+        await notifyJoinRequest(
             todoList.owner._id,
             collaborator.username,
             todoList.name
         );
-
-        return todoList.populate('collaborators', 'username profilePicture');
     } catch (error) {
         console.error("Error joining todo list: ", error);
+        throw error;
+    }
+};
+
+export const approveJoinRequest = async (userId, todoListId, requestingUserId) => {
+    try {
+        const todoList = await TodoList.findById(todoListId);
+        if (!todoList) {
+            throw new AppError("Todo list not found", 404);
+        }
+
+        const owner = await User.findById(userId);
+        if (!owner) {
+            throw new AppError("Owner not found", 404);
+        }
+
+        if (todoList.owner.toString() !== userId.toString()) {
+            throw new AppError("You are not authorized to approve join requests for this todo list", 403);
+        }
+
+        const isPending = todoList.pendingCollaborators.find((pending) => pending.toString() === requestingUserId.toString());
+        if (!isPending) {
+            throw new AppError("No pending join request found for this user", 404);
+        }
+
+        todoList.collaborators.push(requestingUserId);
+        todoList.pendingCollaborators = todoList.pendingCollaborators.filter(pending => pending.toString() !== requestingUserId.toString());
+        await todoList.save();
+
+        // Get all collaborators to notify
+        const collaborators = todoList.collaborators.map((collabs) => collabs._id.toString());
+
+        // Unique collaborators to avoid duplicate notifications
+        const uniqueCollaborators = [...new Set(collaborators.map(collab => collab.toString()))];
+
+        if (uniqueCollaborators.length > 0) {
+            const joinedUser = await User.findById(requestingUserId);
+
+            const notifications = uniqueCollaborators.map((collaboratorId) => ({
+                user: collaboratorId,
+                type: "COLLABORATOR_ADDED",
+                title: "New Collaborator Added",
+                message: `${joinedUser.username} has joined the todo list ${todoList.name}`,
+                data: {
+                    todoListId: todoList._id,
+                    fromUserId: userId
+                }
+            }));
+
+            await createBulkNotifications(notifications);
+        }
+
+        // Notify the new collaborator
+        await notifyApprovedJoinRequest(
+            requestingUserId,
+            todoList.name,
+            owner.username
+        );
+    } catch (error) {
+        console.error("Error approving join request: ", error);
+        throw error;
+    }
+};
+
+export const rejectJoinRequest = async (userId, todoListId, requestingUserId) => {
+    try {
+        const todoList = await TodoList.findById(todoListId);
+        if (!todoList) {
+            throw new AppError("Todo list not found", 404);
+        }
+
+        const owner = await User.findById(userId);
+        if (!owner) {
+            throw new AppError("Owner not found", 404);
+        }
+
+        if (todoList.owner.toString() !== userId.toString()) {
+            throw new AppError("You are not authorized to reject join requests for this todo list", 403);
+        }
+
+        const isPending = todoList.pendingCollaborators.find((pending) => pending.toString() === requestingUserId.toString());
+        if (!isPending) {
+            throw new AppError("No pending join request found for this user", 404);
+        }
+
+        todoList.pendingCollaborators = todoList.pendingCollaborators.filter((pending) => pending.toString() !== requestingUserId.toString());
+        await todoList.save();
+
+        // Notify the user that their join request was rejected
+        await notifyRejectedJoinRequest(
+            requestingUserId,
+            todoList.name,
+            owner.username
+        );
+    } catch (error) {
+        console.error("Error rejecting join request: ", error);
         throw error;
     }
 };
