@@ -193,6 +193,24 @@ export const deleteNotification = async (userId, notificationId) => {
     }
 };
 
+export const deleteAllNotifications = async (userId) => {
+    try {
+        await Notification.deleteAll(userId);
+
+        // Emit update to user
+        io.to(`user_${userId}`).emit("all_notifications_deleted", {
+            unreadCount: 0,
+        });
+
+        return {
+            success: true
+        };
+    } catch (error) {
+        console.error("Error deleting all notifications: ", error);
+        throw error;
+    }
+};
+
 export const notifyTodoListDeleted = async (collaboratorIds, todoListName, ownerName) => {
     const notifications = collaboratorIds.map(collaboratorId => ({
         user: collaboratorId,

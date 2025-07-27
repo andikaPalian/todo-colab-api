@@ -127,6 +127,14 @@ notificationSchema.statics.markAllAsRead = function(userId) {
     );
 };
 
+// Static method untuk bulk delete notifications
+notificationSchema.statics.deleteAll = function(userId) {
+    return this.deleteMany({
+        user: userId,
+        isArchived: false,
+    });
+}
+
 const Notification = mongoose.model('Notification', notificationSchema);
 
 export default Notification;

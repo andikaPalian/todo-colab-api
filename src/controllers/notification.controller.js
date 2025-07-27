@@ -1,4 +1,4 @@
-import { getNotifications, markAsRead, markAllAsRead, deleteNotification } from "../services/notification.service.js";
+import { getNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } from "../services/notification.service.js";
 
 export const getUserNotifications = async (req, res, next) => {
     try {
@@ -84,4 +84,17 @@ export const deleteNotificationById = async (req, res, next) => {
     }
 };
 
-// Nanti tambahkan deleteAllNotification sebelum di controller buat dulu di service 
+export const deleteAllNotificationsController = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+
+        await deleteAllNotifications(userId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Successfully deleted all notifications"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
