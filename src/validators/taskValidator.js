@@ -35,7 +35,7 @@ export const newTaskSchema = z.object({
     }),
     parentTask: z.string().optional().refine((value) => isValidObjectId(value), {
         message: "Invalid ObjectId"
-    })
+    }).nullable()
 });
 
 export const updateTaskSchema = newTaskSchema.partial();

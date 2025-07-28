@@ -6,7 +6,7 @@ import { addTaskCommentController, completeTaskController, createTaskController,
 
 export const taskRouter = express.Router();
 
-taskRouter.post('/create', auth, validateBody(newTaskSchema), createTaskController);
+taskRouter.post('/:todoListId/create-task', auth, validateBody(newTaskSchema), createTaskController);
 taskRouter.get('/:todoListId', auth, getTaskByTodoListController);
 taskRouter.get('/:todoListId/:taskId', auth, getTaskByIdController);
 taskRouter.patch('/todoListId/:taskId/update', auth, validateBody(updateTaskSchema), updateTaskController);
