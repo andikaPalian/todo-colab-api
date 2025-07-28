@@ -170,7 +170,6 @@ export const getTaskByTodoList = async (userId, todoListId, options = {}) => {
         .populate('assignedTo', 'username profilePicture')
         .populate('createdBy', 'username profilePicture')
         .populate('completedBy', 'username profilePicture')
-        .populate('subtasks')
         .populate('comments.author', 'username profilePicture')
         .exec();
 

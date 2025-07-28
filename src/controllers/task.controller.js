@@ -22,7 +22,7 @@ export const createTaskController = async (req, res, next) => {
 
 export const getTaskByTodoListController = async (req, res, next) => {
     try {
-        const userId = req.use.userId;
+        const userId = req.user.userId;
         const {todoListId} = req.params;
         const query = taskQuerySchema.safeParse(req.query);
         if (!query.success) {

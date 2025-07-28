@@ -56,7 +56,7 @@ export const taskQuerySchema = z.object({
     includeCompleted: z.coerce.boolean().optional().default(true),
     status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE"]).optional(),
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-    assignedTo: z.string().optional().refine((value) => isValidObjectId(value), {
+    assignedTo: z.string().optional().refine((value) => !value ||  isValidObjectId(value), {
         message: "Invalid ObjectId"
     }),
     sortBy: z.string().optional().default('createdAt'),
