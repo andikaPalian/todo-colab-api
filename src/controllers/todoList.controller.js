@@ -1,4 +1,4 @@
-import { createTodoList, getTodoLists, getTodoListById, updateTodoList, deleteTodoList, addColaborator, leftTodoList, kickCollaborator, joinTodoList, listCollaborators, approveJoinRequest, rejectJoinRequest } from "../services/todoList.service.js";
+import { createTodoList, getTodoLists, getTodoListById, updateTodoList, deleteTodoList, addColaborator, leftTodoList, kickCollaborator, joinTodoList, listCollaborators, approveJoinRequest, rejectJoinRequest, listRequesters } from "../services/todoList.service.js";
 
 export const createTodoListController = async (req, res, next) => {
     try {
@@ -236,6 +236,26 @@ export const rejectJoinReqyuestController = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Join request rejected successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const listRequestersController = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const {todoListId} = req.params;
+
+        const requesters = await listRequesters(userId, todoListId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Successfully listed join requests",
+            data: {
+                requesters,
+                total: requesters.length
+            }
         });
     } catch (error) {
         next(error);

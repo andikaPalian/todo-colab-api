@@ -449,6 +449,39 @@ export const rejectJoinRequest = async (userId, todoListId, requestingUserId) =>
     }
 };
 
+export const listRequesters = async (userId, todoListId) => {
+    try {
+        const todoList = await TodoList.findById(todoListId);
+        if (!todoList) {
+            throw new AppError("Todo list not found", 404);
+        }
+
+        if (todoList.owner.toString() !== userId.toString()) {
+            throw new AppError("You are not authorized to view join requests for this todo list", 403);
+        }
+
+        const joinRequest = await User.find({
+            _id: {
+                $in: todoList.pendingCollaborators,
+                $ne: userId
+            }
+        })
+        .lean()
+        .select("username profilePicture email");
+
+        console.log('Pedning Collaborators: ', todoList.pendingCollaborators);
+
+        if (!joinRequest || joinRequest.length === 0) {
+            return [];
+        }
+
+        return joinRequest;
+    } catch (error) {
+        console.error("Error listing join requests: ", error);
+        throw error;
+    }
+};
+
 export const listCollaborators = async (userId, todoListId) => {
     try {
         const user = await User.findById(userId);
@@ -469,8 +502,10 @@ export const listCollaborators = async (userId, todoListId) => {
         }
 
         const collaborators = await User.find({
-            _id: {$in: todoList.collaborators},
-            _id: {$ne: userId}
+            _id: {
+                $in: todoList.collaborators,
+                $ne: userId
+            }
         }).select("username profilePicture email");
 
         const result = collaborators.map(collab => {
