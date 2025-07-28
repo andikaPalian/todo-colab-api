@@ -58,7 +58,7 @@ export const getTaskByIdController = async (req, res, next) => {
             todoListId, taskId
         );
 
-        return res,status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Task fetched successfully",
             data: {

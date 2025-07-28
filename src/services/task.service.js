@@ -78,6 +78,10 @@ export const createTask = async (userId, todoListId, taskData) => {
             }]
         });
 
+        // Add task to todo list
+        todoList.tasks.push(task._id);
+        await todoList.save();
+
         // If task is assigned, notify assignee
         if (assignedTo && assignedTo !== userId) {
             // const todoList = await TodoList.findById(listId);
@@ -216,7 +220,6 @@ export const getTaskById = async (userId, todoListId, taskId) => {
         .populate('completedBy', 'username profilePicture')
         .populate('assignedBy', 'username profilePicture')
         .populate('list', 'name')
-        .populate('subtasks')
         .populate('parentTask', 'title')
         .populate('comments.author', 'username profilePicture')
         .populate('activityLog.user', 'username profilePicture')
