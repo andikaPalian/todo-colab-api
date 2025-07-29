@@ -9,7 +9,7 @@ export const taskRouter = express.Router();
 taskRouter.post('/:todoListId/create-task', auth, validateBody(newTaskSchema), createTaskController);
 taskRouter.get('/:todoListId', auth, getTaskByTodoListController);
 taskRouter.get('/:todoListId/:taskId', auth, getTaskByIdController);
-taskRouter.patch('/todoListId/:taskId/update', auth, validateBody(updateTaskSchema), updateTaskController);
+taskRouter.patch('/:todoListId/:taskId/update', auth, validateBody(updateTaskSchema), updateTaskController);
 taskRouter.patch('/:todoListId/:taskId/complete', auth, completeTaskController);
 taskRouter.delete('/:todoListId/:taskId', auth, deleteTaskController);
 taskRouter.post('/:todoListId/:taskId/comment', auth, validateBody(taskCommentSchema), addTaskCommentController);
