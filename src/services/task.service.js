@@ -374,6 +374,10 @@ export const completeTask = async (userId, todoListId, taskId) => {
             throw new AppError("This task is not belong to this todo list", 403);
         }
 
+        if (task.assignedTo && task.assignedTo.toString() !== userId.toString()) {
+            throw new AppError("You can only complete tasks assigned to you", 403);
+        }
+
         if (task.completed) {
             // Mark as incomplete
             task.completed = false;
