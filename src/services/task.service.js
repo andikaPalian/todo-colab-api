@@ -259,6 +259,12 @@ export const updateTask = async (userId, todoListId, taskId, updateData) => {
             throw new AppError("This task is not belong to this todo list", 403);
         }
 
+        // Check if user is creator of the task or owner of the todo list
+        const isCreator = task.createdBy.toString() === userId.toString();
+        if (!isOwner && !isCreator) {
+            throw new AppError("You can only update tasks you created or if you're the todo list owner", 403);
+        }
+
         const {
             title,
             description,
