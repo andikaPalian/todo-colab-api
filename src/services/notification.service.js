@@ -17,6 +17,8 @@ export const NOTIFICATION_TYPES = {
     TASK_COMPLETED: "TASK_COMPLETED",
     TASK_UPDATED: "TASK_UPDATED",
     TASK_DELETED: "TASK_DELETED",
+    TASK_RESTORED: "TASK_RESTORED",
+    TASK_COMMENTED: "TASK_COMMENTED",
     TODO_LIST_SHARED: "TODO_LIST_SHARED",
     CUSTOM: "CUSTOM",
 };
@@ -385,6 +387,36 @@ export const notifyTaskDeleted = async (deletedId, taskTitle, todoListName, dele
             taskTitle,
             todoListName,
             deletedByName
+        }
+    });
+};
+
+export const notifyTaskRestore = async (restoredId, taskTitle, todoListName, restoredByName) => {
+    return createNotification({
+        userId: restoredId,
+        type: NOTIFICATION_TYPES.TASK_RESTORED,
+        title: "Task Restored",
+        message: `${restoredByName} has restored "${taskTitle}" in "${todoListName}"`,
+        priority: NOTIFICATION_PRIORITY.MEDIUM,
+        data: {
+            taskTitle,
+            todoListName,
+            restoredByName
+        }
+    });
+};
+
+export const notifyTaskCommented = async (commentedId, taskTitle, todoListName, commentedByName) => {
+    return createNotification({
+        userId: commentedId,
+        type: NOTIFICATION_TYPES.TASK_COMMENTED,
+        title: "Task Commented",
+        message: `${commentedByName} has commented on "${taskTitle}" in "${todoListName}"`,
+        priority: NOTIFICATION_PRIORITY.MEDIUM,
+        data: {
+            taskTitle,
+            todoListName,
+            commentedByName
         }
     });
 };

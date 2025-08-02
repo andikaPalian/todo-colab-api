@@ -23,6 +23,8 @@ const notificationSchema = new mongoose.Schema({
             "TASK_COMPLETED",
             "TASK_UPDATED",
             "TASK_DELETED",
+            "TASK_RESTORED",
+            "TASK_COMMENTED",
             "TODO_LIST_SHARED",
             "CUSTOM",
         ],
