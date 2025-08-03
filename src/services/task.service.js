@@ -2,7 +2,7 @@ import TodoList from "../models/toDoList.model.js";
 import Task from "../models/task.model.js";
 import User from "../models/user.model.js";
 import { AppError } from "../utils/errorHandler.js";
-import { notifyTaskAssigned, notifyTaskCompleted, notifyTaskDeleted, notifyTaskUpdated, createNotification, createBulkNotifications } from "./notification.service.js";
+import { notifyTaskAssigned, notifyTaskCompleted, notifyTaskDeleted, notifyTaskUpdated, createNotification, createBulkNotifications, notifyTaskRestore } from "./notification.service.js";
 
 // Task Priority Constants
 export const TASK_PRIORITY = {
@@ -488,6 +488,73 @@ export const deleteTask = async (userId, todoListId, taskId) => {
         await notifyTaskDeleted(task.assignedTo, task.title, todoList.name, deleter.username);
     } catch (error) {
         console.error("Error deleting task: ", error);
+        throw error;
+    }
+};
+
+export const restoreTask = async (userId, todoListId, taskId) => {
+    try {
+        const todoList = await TodoList.findById(todoListId);
+        if (!todoList) {
+            throw new AppError('Todo list not found', 404);
+        }
+
+        // Check if user has access to the todo list
+        const isOwner = todoList.owner.toString() === userId.toString();
+        const isCollaborator = todoList.collaborators.some((collab) => collab.toString() === userId.toString());
+        if (!isOwner && !isCollaborator) {
+            throw new AppError("You don't have access to this todo list", 403);
+        }
+
+        const task = await Task.findById(taskId);
+        if (!task) {
+            throw new AppError("Task not found", 404);
+        }
+        
+        // Check if the task is belong to the todoList
+        if (task.list.toString() !== todoListId.toString()) {
+            throw new AppError("This task is not belong to this todo list", 403);
+        }
+
+        const isCreator = task.createdBy.toString() === userId.toString();
+        // Check if user is creator of the task or owner of the todo list
+        if (!isOwner && !isCreator) {
+            throw new AppError("You can only restore tasks you created or if you're the todo list owner", 403);
+        }
+
+        if (!task.isDeleted) {
+            throw new AppError("Task is not deleted", 400);
+        }
+
+        // Restore task
+        task.isDeleted = false;
+        task.deletedAt = null;
+        task.deletedBy = null;
+        await task.save();
+
+        // Restore subtasks if any
+        if (task.subTask && task.subTask.length > 0) {
+            await Task.updateMany(
+                {
+                    _id: {
+                        $in: task.subTask
+                    },
+                    isDeleted: true
+                },
+                {
+                    isDeleted: false,
+                    deletedAt: null,
+                    deletedBy: null
+                }
+            );
+        }
+
+        // Notify task restored
+        // Todo : Harusnya notify ini bulk ke assigned user dan juga owner todo list
+        
+        return task;
+    } catch (error) {
+        console.error("Error restoring task: ", error);
         throw error;
     }
 };

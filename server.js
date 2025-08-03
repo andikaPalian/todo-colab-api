@@ -50,6 +50,8 @@ app.set("io", io);
 connectDB();
 connectCloudinary();
 
+import './src/cron/taskCleanupJob.js'; // Import the cron job for task cleanup
+
 app.use(express.json({
     limit: '10mb',
     verify: (req, res, buf) => {

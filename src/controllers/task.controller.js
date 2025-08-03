@@ -126,6 +126,25 @@ export const deleteTaskController = async (req, res, next) => {
     }
 };
 
+export const restoreTaskController = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const {todoListId, taskId} = req.params;
+
+        const restoredTask = await restoreTask(userId, todoListId, taskId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Task restored successfully",
+            data: {
+                task: restoredTask
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const addTaskCommentController = async (req, res, next) => {
     try {
         const userId = req.user.userId;
